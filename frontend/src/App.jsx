@@ -13,6 +13,7 @@ import Szabalyzat from './pages/Szabalyzat'
 import Segitseg from './pages/Segitseg'
 import Fogasok from './pages/Fogasok'
 import Admin from './pages/Admin'
+import TemaReszletek from './pages/TemaReszletek'
 import NotFound from './pages/NotFound'
 import { useTheme } from './context/ThemeContext'
 import { useAuth } from './context/AuthContext'
@@ -47,6 +48,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+            <Route path="/discussion/:id" element={<TemaReszletek />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

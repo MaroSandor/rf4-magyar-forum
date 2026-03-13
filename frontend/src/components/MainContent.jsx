@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MessageSquare, Share2, Bookmark, ChevronUp, ChevronDown, Users, TrendingUp, X, PenLine } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api/index'
@@ -322,7 +322,7 @@ function MainContent() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
                   <span style={{ background: `${d.categoryColor}22`, color: d.categoryColor, fontSize: '0.7rem', fontWeight: '600', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>{d.category}</span>
                 </div>
-                <a href={`/discussion/${d.id}`} style={{ color: t.text, textDecoration: 'none', fontWeight: '500', fontSize: '0.92rem', lineHeight: 1.45, display: 'block' }}>{d.title}</a>
+                <Link to={`/discussion/${d.id}`} style={{ color: t.text, textDecoration: 'none', fontWeight: '500', fontSize: '0.92rem', lineHeight: 1.45, display: 'block' }}>{d.title}</Link>
                 <div style={{ color: t.textMuted, fontSize: '0.73rem', marginTop: '0.3rem' }}>Írta: <span style={{ color: t.textMuted }}>{d.author}</span> · {d.time}</div>
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '0.6rem' }}>
                   {[
