@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { MessageSquare, Share2, Bookmark, ChevronUp, ChevronDown, Users, TrendingUp, X, PenLine } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 import { api } from '../api/index'
 
 const tabs = ['Felfedezés', 'Verseny', 'Gyakorlás', 'Tanulás', 'Közösség']
@@ -89,15 +91,10 @@ function NewTopicModal({ onClose, onSubmit }) {
   const handleSubmit = () => {
     if (!form.title.trim()) return
     onSubmit({
-      id: Date.now(),
-      votes: 0,
+      title: form.title.trim(),
+      content: form.content.trim(),
       category: form.category,
       categoryColor: selectedCat?.color || '#4ade80',
-      title: form.title.trim(),
-      author: 'Vendég',
-      time: 'most',
-      comments: 0,
-      avatars: ['#4ade80'],
     })
     onClose()
   }
@@ -216,6 +213,10 @@ function MainContent() {
   const [showNewTopic, setShowNewTopic] = useState(false)
   const [discussionList, setDiscussionList] = useState([])
   const t = useTheme()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const searchQuery = searchParams.get('q') || ''
 
   useEffect(() => {
     api.temak.getAll().then((data) => setDiscussionList(data.map((d) => ({
@@ -227,11 +228,31 @@ function MainContent() {
     }))))
   }, [])
 
+  const filteredDiscussions = searchQuery
+    ? discussionList.filter(d =>
+        d.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.author?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : discussionList
+
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: t.bg }}>
       {showNewTopic && <NewTopicModal onClose={() => setShowNewTopic(false)} onSubmit={async (topic) => {
-        const created = await api.temak.create({ title: topic.title, content: topic.content || '', category: topic.category, categoryColor: topic.categoryColor })
-        setDiscussionList((prev) => [{ ...created, author: 'Vendég', time: 'most', comments: 0, avatars: ['#4ade80'] }, ...prev])
+        try {
+          const created = await api.temak.create({ title: topic.title, content: topic.content, category: topic.category, categoryColor: topic.categoryColor })
+          setDiscussionList((prev) => [{
+            ...created,
+            author: created.authorName || user?.username || 'Felhasználó',
+            authorColor: user?.avatarColor || '#4ade80',
+            time: 'most',
+            comments: 0,
+            avatars: [user?.avatarColor || '#4ade80'],
+          }, ...prev])
+          setShowNewTopic(false)
+        } catch (err) {
+          alert(err.message)
+        }
       }} />}
       {/* Banner */}
       <div style={{ position: 'relative', height: '200px', backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.6) 100%), url(/rf4bg.png)`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'flex-end', padding: '1.5rem 2rem', overflow: 'hidden' }}>
@@ -266,7 +287,7 @@ function MainContent() {
             <h2 style={{ color: t.text, fontSize: '1.1rem', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <TrendingUp size={18} color="#4ade80" /> Megbeszélések
             </h2>
-            <button onClick={() => setShowNewTopic(true)} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.45rem 1rem', fontWeight: '600', fontSize: '0.78rem', cursor: 'pointer', letterSpacing: '0.03em' }}>
+            <button onClick={() => { if (!user) { navigate('/login'); return; } setShowNewTopic(true) }} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.45rem 1rem', fontWeight: '600', fontSize: '0.78rem', cursor: 'pointer', letterSpacing: '0.03em' }}>
               + ÚJ TÉMA
             </button>
           </div>
@@ -286,8 +307,15 @@ function MainContent() {
             ))}
           </div>
 
+          {/* Search banner */}
+          {searchQuery && (
+            <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '8px', padding: '0.6rem 1rem', marginBottom: '0.75rem', color: t.textSec, fontSize: '0.82rem' }}>
+              Keresési eredmények: "<strong style={{ color: '#4ade80' }}>{searchQuery}</strong>" ({filteredDiscussions.length} találat)
+            </div>
+          )}
+
           {/* Discussion list */}
-          {discussionList.map((d) => (
+          {filteredDiscussions.map((d) => (
             <div key={d.id} style={{
               display: 'flex', gap: '0.875rem', padding: '1rem', marginBottom: '0.5rem',
               background: t.bgCard, borderRadius: '10px', alignItems: 'flex-start',

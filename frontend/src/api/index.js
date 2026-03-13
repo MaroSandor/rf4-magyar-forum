@@ -24,6 +24,7 @@ export const api = {
     getAll:      ()           => req('/temak'),
     getOne:      (id)         => req(`/temak/${id}`),
     create:      (data)       => req('/temak', { method: 'POST', body: JSON.stringify(data) }),
+    delete:      (id)         => req(`/temak/${id}`, { method: 'DELETE' }),
     vote:        (id, delta)  => req(`/temak/${id}/vote`, { method: 'PATCH', body: JSON.stringify({ delta }) }),
     hozzaszol:   (id, data)   => req(`/temak/${id}/hozzaszolas`, { method: 'POST', body: JSON.stringify(data) }),
   },

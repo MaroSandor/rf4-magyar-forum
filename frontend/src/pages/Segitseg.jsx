@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { HelpCircle, ChevronDown, ChevronUp, Search, MessageSquare, Fish, ShieldCheck, Settings } from 'lucide-react'
+import { HelpCircle, ChevronDown, ChevronUp, Search, MessageSquare, Fish, ShieldCheck, Settings, X, Send } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 
 const categories = [
   {
@@ -117,6 +118,85 @@ const categories = [
   },
 ]
 
+function ContactModal({ onClose }) {
+  const t = useTheme()
+  const { user } = useAuth()
+  const [form, setForm] = useState({ name: user?.username || '', email: user?.email || '', message: '' })
+  const [sent, setSent] = useState(false)
+
+  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+
+  const inputStyle = {
+    width: '100%', background: t.modalDetailBg, border: `1px solid ${t.border}`,
+    borderRadius: '8px', padding: '0.6rem 0.75rem', color: t.text,
+    fontSize: '0.83rem', outline: 'none', boxSizing: 'border-box',
+  }
+  const labelStyle = {
+    color: t.textMuted, fontSize: '0.72rem', fontWeight: '600',
+    textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.3rem',
+  }
+
+  const handleSubmit = () => {
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return
+    setSent(true)
+  }
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+        <div onClick={(e) => e.stopPropagation()} style={{ background: t.modalBg, border: `1px solid ${t.borderFocus}`, borderRadius: '16px', width: '100%', maxWidth: '480px', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.4)' }}>
+          {/* Header */}
+          <div style={{ background: t.modalHeader, padding: '1.25rem 1.5rem', borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <h2 style={{ color: t.text, fontSize: '1rem', fontWeight: '700', margin: 0 }}>Kapcsolatfelvétel</h2>
+              <p style={{ color: t.textMuted, fontSize: '0.75rem', margin: 0 }}>Írj nekünk, 24 órán belül válaszolunk</p>
+            </div>
+            <button onClick={onClose} style={{ background: t.navActiveBg, border: `1px solid ${t.navActiveBorder}`, borderRadius: '6px', color: t.textSec, cursor: 'pointer', padding: '4px', display: 'flex' }}>
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: '1.25rem 1.5rem' }}>
+            {sent ? (
+              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#22c55e22', border: '1px solid #22c55e44', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                  <Send size={22} color="#22c55e" />
+                </div>
+                <h3 style={{ color: t.text, fontSize: '1rem', fontWeight: '700', margin: '0 0 0.4rem' }}>Üzenet elküldve!</h3>
+                <p style={{ color: t.textMuted, fontSize: '0.83rem', margin: 0 }}>Hamarosan felvesszük veled a kapcsolatot.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={labelStyle}>Név *</label>
+                  <input value={form.name} onChange={set('name')} placeholder="A neved" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>E-mail *</label>
+                  <input value={form.email} onChange={set('email')} placeholder="email@pelda.hu" type="email" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Üzenet *</label>
+                  <textarea value={form.message} onChange={set('message')} placeholder="Írd le, miben segíthetünk..." rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.65 }} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
+                  <button onClick={onClose} style={{ background: 'none', border: `1px solid ${t.border}`, color: t.textSec, borderRadius: '8px', padding: '0.55rem 1.25rem', fontSize: '0.83rem', cursor: 'pointer' }}>
+                    Mégse
+                  </button>
+                  <button onClick={handleSubmit} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.55rem 1.5rem', fontSize: '0.83rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Send size={14} /> Küldés
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false)
   const t = useTheme()
@@ -141,6 +221,7 @@ function FaqItem({ q, a }) {
 function Segitseg() {
   const [activeCategory, setActiveCategory] = useState('altalanos')
   const [search, setSearch] = useState('')
+  const [showContact, setShowContact] = useState(false)
   const t = useTheme()
 
   const activeSection = categories.find((c) => c.id === activeCategory)
@@ -154,6 +235,7 @@ function Segitseg() {
 
   return (
     <div style={{ flex: 1, background: t.bg, minHeight: '100vh', padding: '2rem' }}>
+      {showContact && <ContactModal onClose={() => setShowContact(false)} />}
       {/* Header */}
       <div style={{ maxWidth: '800px', marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
@@ -235,7 +317,7 @@ function Segitseg() {
               <p style={{ color: t.text, fontSize: '0.85rem', fontWeight: '600', margin: '0 0 0.2rem' }}>Nem találtad meg a választ?</p>
               <p style={{ color: t.textMuted, fontSize: '0.78rem', margin: 0 }}>Írj nekünk és 24 órán belül válaszolunk.</p>
             </div>
-            <button style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <button onClick={() => setShowContact(true)} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               Kapcsolat
             </button>
           </div>

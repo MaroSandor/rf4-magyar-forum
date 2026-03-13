@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Fish, MapPin, Ruler, Clock, ChevronUp, ChevronDown, Trophy, Star, Filter, Plus, X, Cloud, Wind, Sun, ImagePlus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 import { api } from '../api/index'
 
 const catches = [
@@ -390,11 +392,14 @@ function Fogasok() {
   const [catchList, setCatchList] = useState([])
   const [loading, setLoading] = useState(true)
   const t = useTheme()
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     api.fogasok.getAll()
       .then((data) => setCatchList(data.map((f) => ({
         ...f,
+        fish: f.halfaj,
         user: f.authorName, userColor: f.authorColor,
         weight: f.suly, length: f.hossz, spot: f.spot,
         bait: f.csali, depth: f.melyseg, weather: f.idojaras, time: f.fogasIdeje, note: f.leiras,
@@ -403,13 +408,25 @@ function Fogasok() {
   }, [])
 
   const handleSubmit = async (formData) => {
-    const created = await api.fogasok.create({
-      halfaj: formData.fish, suly: formData.weight, hossz: formData.length,
-      spot: formData.spot, csali: formData.bait, melyseg: formData.depth,
-      idojaras: formData.weather, fogasIdeje: formData.time,
-      leiras: formData.note, tags: formData.tags,
-    })
-    setCatchList((prev) => [{ ...created, user: 'Vendég', userColor: '#4ade80', weight: created.suly, length: created.hossz, bait: created.csali, depth: created.melyseg, weather: created.idojaras, time: created.fogasIdeje, note: created.leiras }, ...prev])
+    try {
+      const created = await api.fogasok.create({
+        halfaj: formData.fish, suly: formData.weight, hossz: formData.length,
+        spot: formData.spot, csali: formData.bait, melyseg: formData.depth,
+        idojaras: formData.weather, fogasIdeje: formData.time,
+        leiras: formData.note, tags: formData.tags,
+      })
+      setCatchList((prev) => [{
+        ...created,
+        fish: created.halfaj,
+        user: user?.username || 'Felhasználó',
+        userColor: user?.avatarColor || '#4ade80',
+        weight: created.suly, length: created.hossz,
+        bait: created.csali, depth: created.melyseg,
+        weather: created.idojaras, time: created.fogasIdeje, note: created.leiras
+      }, ...prev])
+    } catch (err) {
+      alert(err.message || 'Hiba történt. Ellenőrizd, hogy be vagy-e jelentkezve.')
+    }
   }
 
   const filtered = catchList
@@ -434,7 +451,7 @@ function Fogasok() {
           </div>
           <p style={{ color: t.textMuted, fontSize: '0.85rem' }}>Oszd meg a legjobb fogásaidat a közösséggel!</p>
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}>
+        <button onClick={() => { if (!user) { navigate('/login'); return; } setShowForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}>
           <Plus size={15} /> Fogás megosztása
         </button>
       </div>
