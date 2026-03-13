@@ -1,0 +1,27 @@
+{
+  "name": "rf4-magyar-forum",
+  "version": "1.0.0",
+  "description": "Russian Fishing 4 magyar közösség fóruma képek megosztásához, tippek, spotok feltöltéséhez.",
+  "main": "index.js",
+  "scripts": {
+    "dev":   "concurrently --names \"API,VITE\" --prefix-colors \"cyan,green\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build": "npm run build --prefix frontend",
+    "start": "NODE_ENV=production node backend/server.js",
+    "seed":  "node backend/src/db/seed.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaroSandor/rf4-magyar-forum.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MaroSandor/rf4-magyar-forum/issues"
+  },
+  "homepage": "https://github.com/MaroSandor/rf4-magyar-forum#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
