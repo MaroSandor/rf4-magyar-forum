@@ -386,7 +386,7 @@ function CatchFormModal({ onClose, onSubmit }) {
 
 function Fogasok() {
   const [activeFish, setActiveFish] = useState('Mind')
-  const [activeSort, setActiveSort] = useState('votes')
+  const [activeSort, setActiveSort] = useState('date')
   const [selectedCatch, setSelectedCatch] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [catchList, setCatchList] = useState([])
