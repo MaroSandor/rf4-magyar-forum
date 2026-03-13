@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: rf4-magyar-forum
+    runtime: node
+    region: frankfurt   # EU szerver, közelebb van hozzánk
+
+    # Build: függőségek telepítése + frontend build + adatbázis feltöltés
+    buildCommand: >
+      npm install --prefix backend &&
+      npm install --prefix frontend &&
+      npm run build &&
+      node backend/src/db/seed.js
+
+    # Start: production szerver indítása
+    startCommand: NODE_ENV=production node backend/server.js
+
+    # Render automatikusan beállítja a PORT változót, ezt mi is kezeljük
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true   # Render automatikusan generál egy biztonságos értéket
