@@ -218,7 +218,7 @@ function MainContent() {
   const [searchParams] = useSearchParams()
   const searchQuery = searchParams.get('q') || ''
 
-  useEffect(() => {
+  const loadTemak = () => {
     api.temak.getAll().then((data) => setDiscussionList(data.map((d) => ({
       ...d,
       author: d.authorName,
@@ -226,7 +226,9 @@ function MainContent() {
       comments: d.commentCount,
       avatars: [d.authorColor || '#4ade80'],
     }))))
-  }, [])
+  }
+
+  useEffect(() => { loadTemak() }, [])
 
   const filteredDiscussions = searchQuery
     ? discussionList.filter(d =>
@@ -237,18 +239,11 @@ function MainContent() {
     : discussionList
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', background: t.bg }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: t.bg }}>
       {showNewTopic && <NewTopicModal onClose={() => setShowNewTopic(false)} onSubmit={async (topic) => {
         try {
-          const created = await api.temak.create({ title: topic.title, content: topic.content, category: topic.category, categoryColor: topic.categoryColor })
-          setDiscussionList((prev) => [{
-            ...created,
-            author: created.authorName || user?.username || 'Felhasználó',
-            authorColor: user?.avatarColor || '#4ade80',
-            time: 'most',
-            comments: 0,
-            avatars: [user?.avatarColor || '#4ade80'],
-          }, ...prev])
+          await api.temak.create({ title: topic.title, content: topic.content, category: topic.category, categoryColor: topic.categoryColor })
+          await loadTemak()
           setShowNewTopic(false)
         } catch (err) {
           alert(err.message)
@@ -278,7 +273,8 @@ function MainContent() {
         ))}
       </div>
 
-      {/* Body */}
+      {/* Body – görgethető */}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
       <div style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem 2rem' }}>
 
         {/* Discussions */}
@@ -368,6 +364,7 @@ function MainContent() {
           ))}
         </div>
 
+      </div>
       </div>
     </div>
   )

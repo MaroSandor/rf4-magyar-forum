@@ -395,35 +395,27 @@ function Fogasok() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    api.fogasok.getAll()
-      .then((data) => setCatchList(data.map((f) => ({
-        ...f,
-        fish: f.halfaj,
-        user: f.authorName, userColor: f.authorColor,
-        weight: f.suly, length: f.hossz, spot: f.spot,
-        bait: f.csali, depth: f.melyseg, weather: f.idojaras, time: f.fogasIdeje, note: f.leiras,
-      }))))
-      .finally(() => setLoading(false))
-  }, [])
+  const loadFogasok = () => api.fogasok.getAll()
+    .then((data) => setCatchList(data.map((f) => ({
+      ...f,
+      fish: f.halfaj,
+      user: f.authorName, userColor: f.authorColor,
+      weight: f.suly, length: f.hossz, spot: f.spot,
+      bait: f.csali, depth: f.melyseg, weather: f.idojaras, time: f.fogasIdeje, note: f.leiras,
+    }))))
+    .finally(() => setLoading(false))
+
+  useEffect(() => { loadFogasok() }, [])
 
   const handleSubmit = async (formData) => {
     try {
-      const created = await api.fogasok.create({
+      await api.fogasok.create({
         halfaj: formData.fish, suly: formData.weight, hossz: formData.length,
         spot: formData.spot, csali: formData.bait, melyseg: formData.depth,
         idojaras: formData.weather, fogasIdeje: formData.time,
         leiras: formData.note, tags: formData.tags,
       })
-      setCatchList((prev) => [{
-        ...created,
-        fish: created.halfaj,
-        user: user?.username || 'Felhasználó',
-        userColor: user?.avatarColor || '#4ade80',
-        weight: created.suly, length: created.hossz,
-        bait: created.csali, depth: created.melyseg,
-        weather: created.idojaras, time: created.fogasIdeje, note: created.leiras
-      }, ...prev])
+      await loadFogasok()
     } catch (err) {
       alert(err.message || 'Hiba történt. Ellenőrizd, hogy be vagy-e jelentkezve.')
     }
@@ -438,24 +430,29 @@ function Fogasok() {
     })
 
   return (
-    <div style={{ flex: 1, background: t.bg, minHeight: '100vh', padding: '2rem' }}>
-      {loading && <div style={{ color: t.textMuted, padding: '3rem', textAlign: 'center' }}>Betöltés...</div>}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: t.bg }}>
       {selectedCatch && <CatchModal catch={selectedCatch} onClose={() => setSelectedCatch(null)} />}
       {showForm && <CatchFormModal onClose={() => setShowForm(false)} onSubmit={handleSubmit} />}
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem' }}>
-            <Fish size={20} color="#4ade80" />
-            <h1 style={{ color: t.text, fontSize: '1.3rem', fontWeight: '700', margin: 0 }}>Fogások</h1>
+
+      {/* Header – fix */}
+      <div style={{ padding: '2rem 2rem 1rem', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem' }}>
+              <Fish size={20} color="#4ade80" />
+              <h1 style={{ color: t.text, fontSize: '1.3rem', fontWeight: '700', margin: 0 }}>Fogások</h1>
+            </div>
+            <p style={{ color: t.textMuted, fontSize: '0.85rem', margin: 0 }}>Oszd meg a legjobb fogásaidat a közösséggel!</p>
           </div>
-          <p style={{ color: t.textMuted, fontSize: '0.85rem' }}>Oszd meg a legjobb fogásaidat a közösséggel!</p>
+          <button onClick={() => { if (!user) { navigate('/login'); return; } setShowForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}>
+            <Plus size={15} /> Fogás megosztása
+          </button>
         </div>
-        <button onClick={() => { if (!user) { navigate('/login'); return; } setShowForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}>
-          <Plus size={15} /> Fogás megosztása
-        </button>
       </div>
 
+      {/* Görgethető tartalom */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 2rem 2rem' }}>
+      {loading && <div style={{ color: t.textMuted, padding: '3rem', textAlign: 'center' }}>Betöltés...</div>}
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
 
         {/* Main content */}
@@ -613,6 +610,7 @@ function Fogasok() {
           </div>
         </div>
 
+      </div>
       </div>
     </div>
   )

@@ -31,11 +31,11 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', background: t.bg, minHeight: '100vh', color: t.text }}>
+    <div style={{ display: 'flex', flexDirection: 'column', background: t.bg, height: '100vh', color: t.text }}>
       {isMobile && <MobileTopBar onMenuClick={() => setSidebarOpen(true)} />}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Sidebar isMobile={isMobile} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
+        <div style={{ flex: 1, overflow: 'hidden', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <Routes>
             <Route path="/" element={<Fooldal />} />
             <Route path="/forum" element={<Forum />} />
