@@ -450,13 +450,12 @@ function Fogasok() {
         </div>
       </div>
 
-      {/* Görgethető tartalom */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 2rem 2rem' }}>
-      {loading && <div style={{ color: t.textMuted, padding: '3rem', textAlign: 'center' }}>Betöltés...</div>}
-      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+      {/* Tartalom */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', gap: '1.5rem', padding: '0 2rem 2rem' }}>
 
-        {/* Main content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Fogáslista – görgethető */}
+        <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
+      {loading && <div style={{ color: t.textMuted, padding: '3rem', textAlign: 'center' }}>Betöltés...</div>}
 
           {/* Filters */}
           <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -610,7 +609,6 @@ function Fogasok() {
           </div>
         </div>
 
-      </div>
       </div>
     </div>
   )
