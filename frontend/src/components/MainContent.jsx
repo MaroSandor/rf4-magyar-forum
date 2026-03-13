@@ -273,12 +273,11 @@ function MainContent() {
         ))}
       </div>
 
-      {/* Body – görgethető */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-      <div style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem 2rem' }}>
+      {/* Body */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', gap: '1.5rem', padding: '1.5rem 2rem' }}>
 
-        {/* Discussions */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Discussions – görgethető */}
+        <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
             <h2 style={{ color: t.text, fontSize: '1.1rem', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <TrendingUp size={18} color="#4ade80" /> Megbeszélések
@@ -364,7 +363,6 @@ function MainContent() {
           ))}
         </div>
 
-      </div>
       </div>
     </div>
   )
