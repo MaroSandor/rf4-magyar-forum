@@ -8,8 +8,8 @@ const { authenticate } = require('../middleware/authenticate')
 const router = express.Router()
 
 // NYILVÁNOS
-router.get('/', (req, res) => {
-  const result = db
+router.get('/', async (req, res) => {
+  const result = await db
     .select({
       id:          fogasok.id,
       halfaj:      fogasok.halfaj,
@@ -31,20 +31,19 @@ router.get('/', (req, res) => {
     .from(fogasok)
     .leftJoin(users, eq(fogasok.userId, users.id))
     .orderBy(desc(fogasok.votes))
-    .all()
 
   res.json(result.map((f) => ({ ...f, tags: f.tags ? JSON.parse(f.tags) : [] })))
 })
 
-// VÉDETT — csak bejelentkezett user oszthat meg fogást
-router.post('/', authenticate, (req, res) => {
+// VÉDETT
+router.post('/', authenticate, async (req, res) => {
   const { halfaj, suly, hossz, spot, csali, melyseg, idojaras, fogasIdeje, leiras, tags } = req.body
 
   if (!halfaj || !suly) {
     return res.status(400).json({ error: 'Halfaj és súly kötelező.' })
   }
 
-  const [newFogas] = db
+  const [newFogas] = await db
     .insert(fogasok)
     .values({
       halfaj, suly, hossz, spot, csali, melyseg, idojaras, fogasIdeje, leiras,
@@ -53,34 +52,32 @@ router.post('/', authenticate, (req, res) => {
       createdAt: new Date().toISOString(),
     })
     .returning()
-    .all()
 
   res.status(201).json({ ...newFogas, tags: JSON.parse(newFogas.tags || '[]') })
 })
 
-// VÉDETT — bejelentkezett user szavazhat
-router.patch('/:id/vote', authenticate, (req, res) => {
+// VÉDETT
+router.patch('/:id/vote', authenticate, async (req, res) => {
   const id = parseInt(req.params.id)
   const { delta } = req.body
 
-  const fogas = db.select().from(fogasok).where(eq(fogasok.id, id)).get()
+  const fogas = (await db.select().from(fogasok).where(eq(fogasok.id, id)))[0]
   if (!fogas) return res.status(404).json({ error: 'Fogás nem található.' })
 
-  const [updated] = db
+  const [updated] = await db
     .update(fogasok)
     .set({ votes: fogas.votes + (delta === 1 ? 1 : -1) })
     .where(eq(fogasok.id, id))
     .returning()
-    .all()
 
   res.json(updated)
 })
 
-// VÉDETT — saját fogás törlése (vagy admin/moderátor bárkit)
-router.delete('/:id', authenticate, (req, res) => {
+// VÉDETT
+router.delete('/:id', authenticate, async (req, res) => {
   const id = parseInt(req.params.id)
 
-  const fogas = db.select().from(fogasok).where(eq(fogasok.id, id)).get()
+  const fogas = (await db.select().from(fogasok).where(eq(fogasok.id, id)))[0]
   if (!fogas) return res.status(404).json({ error: 'Fogás nem található.' })
 
   const isSaját = fogas.userId === req.user.id
@@ -90,7 +87,7 @@ router.delete('/:id', authenticate, (req, res) => {
     return res.status(403).json({ error: 'Csak a saját fogásodat törölheted.' })
   }
 
-  db.delete(fogasok).where(eq(fogasok.id, id)).run()
+  await db.delete(fogasok).where(eq(fogasok.id, id))
   res.json({ ok: true })
 })
 

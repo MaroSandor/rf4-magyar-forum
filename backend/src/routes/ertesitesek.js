@@ -7,9 +7,9 @@ const { authenticate } = require('../middleware/authenticate')
 
 const router = express.Router()
 
-// VÉDETT — mindenki csak a saját értesítéseit látja
-router.get('/', authenticate, (req, res) => {
-  const result = db
+// VÉDETT
+router.get('/', authenticate, async (req, res) => {
+  const result = await db
     .select({
       id:            ertesitesek.id,
       type:          ertesitesek.type,
@@ -22,45 +22,44 @@ router.get('/', authenticate, (req, res) => {
     })
     .from(ertesitesek)
     .leftJoin(users, eq(ertesitesek.fromUserId, users.id))
-    .where(eq(ertesitesek.userId, req.user.id))  // ← tokenből jön, nem query paramból
+    .where(eq(ertesitesek.userId, req.user.id))
     .orderBy(desc(ertesitesek.createdAt))
-    .all()
 
   res.json(result.map((e) => ({ ...e, read: e.read === 1 })))
 })
 
-// VÉDETT — csak a saját értesítést jelölheted olvasottnak
-router.patch('/read-all', authenticate, (req, res) => {
-  db.update(ertesitesek).set({ read: 1 }).where(eq(ertesitesek.userId, req.user.id)).run()
+// VÉDETT
+router.patch('/read-all', authenticate, async (req, res) => {
+  await db.update(ertesitesek).set({ read: 1 }).where(eq(ertesitesek.userId, req.user.id))
   res.json({ ok: true })
 })
 
-router.patch('/:id/read', authenticate, (req, res) => {
+router.patch('/:id/read', authenticate, async (req, res) => {
   const id = parseInt(req.params.id)
 
-  const ert = db.select().from(ertesitesek).where(eq(ertesitesek.id, id)).get()
+  const ert = (await db.select().from(ertesitesek).where(eq(ertesitesek.id, id)))[0]
   if (!ert) return res.status(404).json({ error: 'Értesítés nem található.' })
 
   if (ert.userId !== req.user.id) {
     return res.status(403).json({ error: 'Csak a saját értesítésedet jelölheted olvasottnak.' })
   }
 
-  db.update(ertesitesek).set({ read: 1 }).where(eq(ertesitesek.id, id)).run()
+  await db.update(ertesitesek).set({ read: 1 }).where(eq(ertesitesek.id, id))
   res.json({ ok: true })
 })
 
-// VÉDETT — csak saját értesítést törölhetsz
-router.delete('/:id', authenticate, (req, res) => {
+// VÉDETT
+router.delete('/:id', authenticate, async (req, res) => {
   const id = parseInt(req.params.id)
 
-  const ert = db.select().from(ertesitesek).where(eq(ertesitesek.id, id)).get()
+  const ert = (await db.select().from(ertesitesek).where(eq(ertesitesek.id, id)))[0]
   if (!ert) return res.status(404).json({ error: 'Értesítés nem található.' })
 
   if (ert.userId !== req.user.id) {
     return res.status(403).json({ error: 'Csak a saját értesítésedet törölheted.' })
   }
 
-  db.delete(ertesitesek).where(eq(ertesitesek.id, id)).run()
+  await db.delete(ertesitesek).where(eq(ertesitesek.id, id))
   res.json({ ok: true })
 })
 

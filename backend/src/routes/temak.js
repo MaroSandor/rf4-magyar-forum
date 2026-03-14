@@ -8,9 +8,9 @@ const { authorize } = require('../middleware/authorize')
 
 const router = express.Router()
 
-// NYILVÁNOS — bárki olvashatja
-router.get('/', (req, res) => {
-  const result = db
+// NYILVÁNOS
+router.get('/', async (req, res) => {
+  const result = await db
     .select({
       id:            temak.id,
       title:         temak.title,
@@ -25,16 +25,15 @@ router.get('/', (req, res) => {
     .from(temak)
     .leftJoin(users, eq(temak.userId, users.id))
     .orderBy(desc(temak.createdAt))
-    .all()
 
   res.json(result)
 })
 
 // NYILVÁNOS
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const id = parseInt(req.params.id)
 
-  const tema = db
+  const tema = (await db
     .select({
       id:            temak.id,
       title:         temak.title,
@@ -50,12 +49,11 @@ router.get('/:id', (req, res) => {
     })
     .from(temak)
     .leftJoin(users, eq(temak.userId, users.id))
-    .where(eq(temak.id, id))
-    .get()
+    .where(eq(temak.id, id)))[0]
 
   if (!tema) return res.status(404).json({ error: 'Téma nem található.' })
 
-  const comments = db
+  const comments = await db
     .select({
       id:          hozzaszolasok.id,
       content:     hozzaszolasok.content,
@@ -69,76 +67,72 @@ router.get('/:id', (req, res) => {
     .leftJoin(users, eq(hozzaszolasok.userId, users.id))
     .where(eq(hozzaszolasok.temaId, id))
     .orderBy(hozzaszolasok.createdAt)
-    .all()
 
   res.json({ ...tema, comments })
 })
 
-// VÉDETT — bejelentkezett user hozhat létre témát
-router.post('/', authenticate, (req, res) => {
+// VÉDETT
+router.post('/', authenticate, async (req, res) => {
   const { title, content, category, categoryColor } = req.body
 
   if (!title || !content || !category) {
     return res.status(400).json({ error: 'Cím, tartalom és kategória kötelező.' })
   }
 
-  const [newTema] = db
+  const [newTema] = await db
     .insert(temak)
     .values({
       title, content, category,
       categoryColor: categoryColor || '#4ade80',
-      userId: req.user.id,   // ← a tokenből jön, nem a body-ból
+      userId: req.user.id,
       createdAt: new Date().toISOString(),
     })
     .returning()
-    .all()
 
   res.status(201).json(newTema)
 })
 
-// VÉDETT — bejelentkezett user kommentelhet
-router.post('/:id/hozzaszolas', authenticate, (req, res) => {
+// VÉDETT
+router.post('/:id/hozzaszolas', authenticate, async (req, res) => {
   const temaId = parseInt(req.params.id)
   const { content } = req.body
 
   if (!content) return res.status(400).json({ error: 'A tartalom kötelező.' })
 
-  const [newComment] = db
+  const [newComment] = await db
     .insert(hozzaszolasok)
     .values({ temaId, content, userId: req.user.id, createdAt: new Date().toISOString() })
     .returning()
-    .all()
 
   res.status(201).json(newComment)
 })
 
-// VÉDETT — bejelentkezett user szavazhat
-router.patch('/:id/vote', authenticate, (req, res) => {
+// VÉDETT
+router.patch('/:id/vote', authenticate, async (req, res) => {
   const id = parseInt(req.params.id)
   const { delta } = req.body
 
-  const tema = db.select().from(temak).where(eq(temak.id, id)).get()
+  const tema = (await db.select().from(temak).where(eq(temak.id, id)))[0]
   if (!tema) return res.status(404).json({ error: 'Téma nem található.' })
 
-  const [updated] = db
+  const [updated] = await db
     .update(temak)
     .set({ votes: tema.votes + (delta === 1 ? 1 : -1) })
     .where(eq(temak.id, id))
     .returning()
-    .all()
 
   res.json(updated)
 })
 
-// VÉDETT — csak moderátor vagy admin törölhet bárki témáját
-router.delete('/:id', authenticate, authorize('moderator', 'admin'), (req, res) => {
+// VÉDETT — csak moderátor vagy admin
+router.delete('/:id', authenticate, authorize('moderator', 'admin'), async (req, res) => {
   const id = parseInt(req.params.id)
 
-  const tema = db.select().from(temak).where(eq(temak.id, id)).get()
+  const tema = (await db.select().from(temak).where(eq(temak.id, id)))[0]
   if (!tema) return res.status(404).json({ error: 'Téma nem található.' })
 
-  db.delete(hozzaszolasok).where(eq(hozzaszolasok.temaId, id)).run()
-  db.delete(temak).where(eq(temak.id, id)).run()
+  await db.delete(hozzaszolasok).where(eq(hozzaszolasok.temaId, id))
+  await db.delete(temak).where(eq(temak.id, id))
 
   res.json({ ok: true })
 })

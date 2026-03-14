@@ -6,8 +6,8 @@ const { spotok } = require('../db/schema/spotok')
 const router = express.Router()
 
 // GET /api/spotok
-router.get('/', (req, res) => {
-  const result = db.select().from(spotok).all()
+router.get('/', async (req, res) => {
+  const result = await db.select().from(spotok)
 
   const parsed = result.map((s) => ({
     ...s,
@@ -19,8 +19,8 @@ router.get('/', (req, res) => {
 })
 
 // GET /api/spotok/:id
-router.get('/:id', (req, res) => {
-  const spot = db.select().from(spotok).where(eq(spotok.id, parseInt(req.params.id))).get()
+router.get('/:id', async (req, res) => {
+  const spot = (await db.select().from(spotok).where(eq(spotok.id, parseInt(req.params.id))))[0]
   if (!spot) return res.status(404).json({ error: 'Spot nem található.' })
 
   res.json({

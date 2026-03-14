@@ -1,23 +1,14 @@
-const { sqliteTable, integer, text } = require('drizzle-orm/sqlite-core')
+const { pgTable, serial, text, integer } = require('drizzle-orm/pg-core')
 
-const ertesitesek = sqliteTable('ertesitesek', {
-  id:        integer('id').primaryKey({ autoIncrement: true }),
-  userId:    integer('user_id').notNull(),    // kinek szól az értesítés
-  fromUserId: integer('from_user_id'),        // ki váltotta ki (lehet null, pl. rendszer üzenet)
-
-  // 'reply' | 'like' | 'follow' | 'system'
-  type:      text('type').notNull(),
-
-  // Rövid szöveg pl. "válaszolt a hozzászólásodra:"
-  text:      text('text').notNull(),
-
-  // Opcionális részlet pl. az idézett bejegyzés
-  detail:    text('detail'),
-
-  // Olvasott-e már
-  read:      integer('read').notNull().default(0), // SQLite-ban nincs boolean, 0=false, 1=true
-
-  createdAt: text('created_at').notNull().default("(datetime('now'))"),
+const ertesitesek = pgTable('ertesitesek', {
+  id:         serial('id').primaryKey(),
+  userId:     integer('user_id').notNull(),
+  fromUserId: integer('from_user_id'),
+  type:       text('type').notNull(),
+  text:       text('text').notNull(),
+  detail:     text('detail'),
+  read:       integer('read').notNull().default(0),
+  createdAt:  text('created_at').notNull(),
 })
 
 module.exports = { ertesitesek }
