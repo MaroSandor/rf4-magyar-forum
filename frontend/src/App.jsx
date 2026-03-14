@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
-import RightPanel from './components/RightPanel'
 import MobileTopBar from './components/MobileTopBar'
 import Fooldal from './pages/Fooldal'
 import Forum from './pages/Forum'
@@ -52,7 +51,6 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
-        {!isMobile && <RightPanel />}
       </div>
     </div>
   )

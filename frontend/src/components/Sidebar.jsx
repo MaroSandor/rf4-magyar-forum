@@ -189,12 +189,6 @@ function Sidebar({ isMobile, isOpen, onClose }) {
               {isExpanded && <span style={{ whiteSpace: 'nowrap', fontSize: '0.88rem' }}>{label}</span>}
             </NavLink>
           ))}
-          {user?.role === 'admin' && (
-            <NavLink to="/admin" style={navLinkStyle} onClick={isMobile ? onClose : undefined}>
-              <Shield size={17} style={{ flexShrink: 0 }} />
-              {isExpanded && <span style={{ whiteSpace: 'nowrap', fontSize: '0.88rem', color: '#f87171' }}>Admin</span>}
-            </NavLink>
-          )}
         </div>
 
         {/* Bottom links */}
@@ -205,6 +199,12 @@ function Sidebar({ isMobile, isOpen, onClose }) {
               {isExpanded && <span style={{ whiteSpace: 'nowrap', fontSize: '0.88rem' }}>{label}</span>}
             </NavLink>
           ))}
+          {user?.role === 'admin' && (
+            <NavLink to="/admin" style={navLinkStyle} onClick={isMobile ? onClose : undefined}>
+              <Shield size={17} style={{ flexShrink: 0 }} />
+              {isExpanded && <span style={{ whiteSpace: 'nowrap', fontSize: '0.88rem', color: '#f87171' }}>Admin</span>}
+            </NavLink>
+          )}
         </div>
 
         {/* User Profile */}
