@@ -44,8 +44,8 @@ function Register() {
   const labelStyle = { color: t.textMuted, fontSize: '0.78rem', fontWeight: '600', display: 'block', marginBottom: '0.3rem' }
 
   return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: t.bg, minHeight: '100vh' }}>
-      <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '12px', padding: '2rem', width: '380px' }}>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: t.bg, overflowY: 'auto', padding: '1rem' }}>
+      <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '12px', padding: '2rem', width: '100%', maxWidth: '380px', boxSizing: 'border-box' }}>
         <h2 style={{ color: t.text, fontSize: '1.3rem', fontWeight: '700', marginBottom: '0.4rem' }}>Regisztráció</h2>
         <p style={{ color: t.textMuted, fontSize: '0.85rem', marginBottom: '1.5rem' }}>Csatlakozz az RF4 Magyar közösséghez!</p>
 
