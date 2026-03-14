@@ -1,12 +1,15 @@
-import { Menu, Fish, Sun, Moon, LogIn, LogOut } from 'lucide-react'
+import { Menu, Fish, Sun, Moon, LogIn, LogOut, MessageSquare } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useMobilePanel } from '../context/MobilePanelContext'
 
 function MobileTopBar({ onMenuClick }) {
   const t = useTheme()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const { setChatOpen } = useMobilePanel()
 
   return (
     <div style={{
@@ -25,6 +28,11 @@ function MobileTopBar({ onMenuClick }) {
         <span style={{ color: t.text, fontWeight: '700', fontSize: '0.88rem' }}>RF4 Magyar</span>
       </div>
       <div style={{ flex: 1 }} />
+      {pathname === '/' && (
+        <button onClick={() => setChatOpen(true)} title="Chat szobák" style={{ background: 'none', border: 'none', color: t.textMuted, cursor: 'pointer', display: 'flex', padding: '4px' }}>
+          <MessageSquare size={18} />
+        </button>
+      )}
       <button onClick={t.toggle} style={{ background: 'none', border: 'none', color: t.textMuted, cursor: 'pointer', display: 'flex', padding: '4px' }}>
         {t.isDark ? <Sun size={18} /> : <Moon size={18} />}
       </button>

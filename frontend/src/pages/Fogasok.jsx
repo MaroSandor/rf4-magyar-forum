@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Fish, MapPin, Ruler, Clock, ChevronUp, ChevronDown, Trophy, Star, Filter, Plus, X, Cloud, Wind, Sun, ImagePlus } from 'lucide-react'
+import { Fish, MapPin, Ruler, Clock, ChevronUp, ChevronDown, Trophy, Star, Filter, Plus, X, Cloud, Wind, Sun, ImagePlus, SlidersHorizontal } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { api } from '../api/index'
 
 const catches = [
@@ -384,6 +385,45 @@ function CatchFormModal({ onClose, onSubmit }) {
   )
 }
 
+function LeaderboardPanel({ t }) {
+  return (
+    <>
+      <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <Star size={15} color="#4ade80" />
+          <h3 style={{ color: t.text, fontSize: '0.88rem', fontWeight: '700', margin: 0 }}>Heti legjobb</h3>
+        </div>
+        <div style={{ background: t.weeklyBestBg, borderRadius: '8px', padding: '0.875rem', textAlign: 'center', border: `1px solid ${t.weeklyBestBorder}` }}>
+          <Fish size={28} color="#4ade80" style={{ marginBottom: '0.4rem' }} />
+          <div style={{ color: t.text, fontWeight: '700', fontSize: '1rem' }}>Harcsa</div>
+          <div style={{ color: t.gold, fontWeight: '800', fontSize: '1.3rem' }}>38.5 kg</div>
+          <div style={{ color: t.textMuted, fontSize: '0.72rem', marginTop: '0.2rem' }}>NagyFogás · Volga Delta</div>
+        </div>
+      </div>
+      <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '12px', padding: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <Trophy size={15} color="#4ade80" />
+          <h3 style={{ color: t.text, fontSize: '0.88rem', fontWeight: '700', margin: 0 }}>Ranglista</h3>
+        </div>
+        {leaderboard.map((entry) => (
+          <div key={entry.rank} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', padding: '0.5rem 0.6rem', borderRadius: '8px', background: entry.rank === 1 ? t.rank1Bg : t.bg, border: '1px solid ' + (entry.rank === 1 ? t.rank1Border : t.border) }}>
+            <span style={{ color: entry.rank === 1 ? t.gold : t.textDim, fontSize: '0.72rem', fontWeight: '700', width: '14px', textAlign: 'center' }}>
+              {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : entry.rank}
+            </span>
+            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.62rem', fontWeight: 'bold' }}>
+              {entry.user[0]}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: t.textSec, fontSize: '0.75rem', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.user}</div>
+              <div style={{ color: t.textMuted, fontSize: '0.68rem' }}>{entry.fish} · {entry.weight} kg</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
 function Fogasok() {
   const [activeFish, setActiveFish] = useState('Mind')
   const [activeSort, setActiveSort] = useState('date')
@@ -394,6 +434,9 @@ function Fogasok() {
   const t = useTheme()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
+  const [statsOpen, setStatsOpen] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
 
   const loadFogasok = () => api.fogasok.getAll()
     .then((data) => setCatchList(data.map((f) => ({
@@ -444,9 +487,16 @@ function Fogasok() {
             </div>
             <p style={{ color: t.textMuted, fontSize: '0.85rem', margin: 0 }}>Oszd meg a legjobb fogásaidat a közösséggel!</p>
           </div>
-          <button onClick={() => { if (!user) { navigate('/login'); return; } setShowForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}>
-            <Plus size={15} /> Fogás megosztása
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {isMobile && (
+              <button onClick={() => setStatsOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: t.bgCard, color: t.textSec, border: `1px solid ${t.border}`, borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}>
+                <Trophy size={15} /> Statisztika
+              </button>
+            )}
+            <button onClick={() => { if (!user) { navigate('/login'); return; } setShowForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.1rem', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}>
+              <Plus size={15} /> Fogás megosztása
+            </button>
+          </div>
         </div>
       </div>
 
@@ -457,41 +507,52 @@ function Fogasok() {
         <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
       {loading && <div style={{ color: t.textMuted, padding: '3rem', textAlign: 'center' }}>Betöltés...</div>}
 
+          {/* Szűrő gomb mobilon */}
+          {isMobile && (
+            <button onClick={() => setFilterOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: filterOpen ? t.filterActiveBg : t.bgCard, color: filterOpen ? t.filterActiveColor : t.textSec, border: `1px solid ${filterOpen ? t.filterActiveBorder : t.border}`, borderRadius: '8px', padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: '600', cursor: 'pointer', marginBottom: '0.75rem' }}>
+              <SlidersHorizontal size={14} /> Szűrők {filterOpen ? '▲' : '▼'}
+            </button>
+          )}
+
           {/* Filters */}
-          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Filter size={13} color={t.textMuted} />
-              <span style={{ color: t.textMuted, fontSize: '0.78rem' }}>Halfaj:</span>
+          {(!isMobile || filterOpen) && (
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Filter size={13} color={t.textMuted} />
+                <span style={{ color: t.textMuted, fontSize: '0.78rem' }}>Halfaj:</span>
+              </div>
+              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                {fishTypes.map((f) => (
+                  <button key={f} onClick={() => setActiveFish(f)} style={{
+                    background: activeFish === f ? t.filterActiveBg : 'transparent',
+                    color: activeFish === f ? t.filterActiveColor : t.textMuted,
+                    border: '1px solid ' + (activeFish === f ? t.filterActiveBorder : t.border),
+                    borderRadius: '6px', padding: '0.25rem 0.65rem',
+                    fontSize: '0.75rem', fontWeight: activeFish === f ? '600' : '400', cursor: 'pointer',
+                  }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-              {fishTypes.map((f) => (
-                <button key={f} onClick={() => setActiveFish(f)} style={{
-                  background: activeFish === f ? t.filterActiveBg : 'transparent',
-                  color: activeFish === f ? t.filterActiveColor : t.textMuted,
-                  border: '1px solid ' + (activeFish === f ? t.filterActiveBorder : t.border),
-                  borderRadius: '6px', padding: '0.25rem 0.65rem',
-                  fontSize: '0.75rem', fontWeight: activeFish === f ? '600' : '400', cursor: 'pointer',
+          )}
+
+          {/* Sort */}
+          {(!isMobile || filterOpen) && (
+            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+              {sortOptions.map(({ key, label }) => (
+                <button key={key} onClick={() => setActiveSort(key)} style={{
+                  background: activeSort === key ? t.filterActiveBg : 'transparent',
+                  color: activeSort === key ? t.filterActiveColor : t.textMuted,
+                  border: '1px solid ' + (activeSort === key ? t.filterActiveBorder : t.border),
+                  borderRadius: '6px', padding: '0.3rem 0.85rem',
+                  fontSize: '0.78rem', fontWeight: activeSort === key ? '600' : '400', cursor: 'pointer',
                 }}>
-                  {f}
+                  {label}
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Sort */}
-          <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.25rem' }}>
-            {sortOptions.map(({ key, label }) => (
-              <button key={key} onClick={() => setActiveSort(key)} style={{
-                background: activeSort === key ? t.filterActiveBg : 'transparent',
-                color: activeSort === key ? t.filterActiveColor : t.textMuted,
-                border: '1px solid ' + (activeSort === key ? t.filterActiveBorder : t.border),
-                borderRadius: '6px', padding: '0.3rem 0.85rem',
-                fontSize: '0.78rem', fontWeight: activeSort === key ? '600' : '400', cursor: 'pointer',
-              }}>
-                {label}
-              </button>
-            ))}
-          </div>
+          )}
 
           {/* Catch cards */}
           {filtered.map((c) => (
@@ -555,45 +616,22 @@ function Fogasok() {
           )}
         </div>
 
-        {/* Leaderboard */}
-        <div style={{ width: '220px', flexShrink: 0 }}>
-          {/* Weekly best */}
-          <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <Star size={15} color="#4ade80" />
-              <h3 style={{ color: t.text, fontSize: '0.88rem', fontWeight: '700', margin: 0 }}>Heti legjobb</h3>
-            </div>
-            <div style={{ background: t.weeklyBestBg, borderRadius: '8px', padding: '0.875rem', textAlign: 'center', border: `1px solid ${t.weeklyBestBorder}` }}>
-              <Fish size={28} color="#4ade80" style={{ marginBottom: '0.4rem' }} />
-              <div style={{ color: t.text, fontWeight: '700', fontSize: '1rem' }}>Harcsa</div>
-              <div style={{ color: t.gold, fontWeight: '800', fontSize: '1.3rem' }}>38.5 kg</div>
-              <div style={{ color: t.textMuted, fontSize: '0.72rem', marginTop: '0.2rem' }}>NagyFogás · Volga Delta</div>
-            </div>
-          </div>
+        {/* Leaderboard – desktop */}
+        {!isMobile && <LeaderboardPanel t={t} />}
 
-          {/* Leaderboard */}
-          <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '12px', padding: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <Trophy size={15} color="#4ade80" />
-              <h3 style={{ color: t.text, fontSize: '0.88rem', fontWeight: '700', margin: 0 }}>Ranglista</h3>
-            </div>
-            {leaderboard.map((entry) => (
-              <div key={entry.rank} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', padding: '0.5rem 0.6rem', borderRadius: '8px', background: entry.rank === 1 ? t.rank1Bg : t.bg, border: '1px solid ' + (entry.rank === 1 ? t.rank1Border : t.border) }}>
-                <span style={{ color: entry.rank === 1 ? t.gold : t.textDim, fontSize: '0.72rem', fontWeight: '700', width: '14px', textAlign: 'center' }}>
-                  {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : entry.rank}
-                </span>
-                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.62rem', fontWeight: 'bold' }}>
-                  {entry.user[0]}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: t.textSec, fontSize: '0.75rem', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.user}</div>
-                  <div style={{ color: t.textMuted, fontSize: '0.68rem' }}>{entry.fish} · {entry.weight} kg</div>
-                </div>
+        {/* Leaderboard – mobil drawer */}
+        {isMobile && statsOpen && (
+          <>
+            <div onClick={() => setStatsOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200 }} />
+            <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '280px', background: t.bgCard, borderLeft: `1px solid ${t.border}`, zIndex: 201, overflowY: 'auto', padding: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h2 style={{ color: t.text, fontSize: '0.95rem', fontWeight: '700', margin: 0 }}>Statisztika</h2>
+                <button onClick={() => setStatsOpen(false)} style={{ background: 'none', border: 'none', color: t.textMuted, cursor: 'pointer', fontSize: '1.2rem', display: 'flex' }}>✕</button>
               </div>
-            ))}
-          </div>
-
-        </div>
+              <LeaderboardPanel t={t} />
+            </div>
+          </>
+        )}
 
       </div>
     </div>

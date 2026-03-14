@@ -3,6 +3,8 @@ import { MessageSquare, Share2, Bookmark, ChevronUp, ChevronDown, Users, Trendin
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
+import { useIsMobile } from '../hooks/useIsMobile'
+import { useMobilePanel } from '../context/MobilePanelContext'
 import { api } from '../api/index'
 
 const tabs = ['Felfedezés', 'Verseny', 'Gyakorlás', 'Tanulás', 'Közösség']
@@ -215,6 +217,8 @@ function MainContent() {
   const t = useTheme()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
+  const { chatOpen, setChatOpen } = useMobilePanel()
   const [searchParams] = useSearchParams()
   const searchQuery = searchParams.get('q') || ''
 
@@ -345,23 +349,51 @@ function MainContent() {
           ))}
         </div>
 
-        {/* Chat Lobbies */}
-        <div style={{ width: '220px', flexShrink: 0 }}>
-          <h2 style={{ color: t.text, fontSize: '0.95rem', fontWeight: '700', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Users size={16} color="#2d9c8a" /> Chat szobák
-          </h2>
-          <p style={{ color: t.textMuted, fontSize: '0.75rem', marginBottom: '1rem' }}>Csatlakozz más horgászokhoz!</p>
-          {lobbies.map((lobby) => (
-            <div key={lobby.id} style={{ padding: '0.75rem', marginBottom: '0.4rem', background: t.bgCard, borderRadius: '8px', cursor: 'pointer', border: `1px solid ${t.border}` }}>
-              <div style={{ color: '#4ade80', fontSize: '0.83rem', fontWeight: '600' }}>{lobby.name}</div>
-              <div style={{ color: t.textMuted, fontSize: '0.73rem', margin: '0.2rem 0' }}>{lobby.desc}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: t.textMuted, fontSize: '0.72rem', marginTop: '0.4rem' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-                {lobby.users} online
+        {/* Chat Lobbies – desktop */}
+        {!isMobile && (
+          <div style={{ width: '220px', flexShrink: 0 }}>
+            <h2 style={{ color: t.text, fontSize: '0.95rem', fontWeight: '700', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Users size={16} color="#2d9c8a" /> Chat szobák
+            </h2>
+            <p style={{ color: t.textMuted, fontSize: '0.75rem', marginBottom: '1rem' }}>Csatlakozz más horgászokhoz!</p>
+            {lobbies.map((lobby) => (
+              <div key={lobby.id} style={{ padding: '0.75rem', marginBottom: '0.4rem', background: t.bgCard, borderRadius: '8px', cursor: 'pointer', border: `1px solid ${t.border}` }}>
+                <div style={{ color: '#4ade80', fontSize: '0.83rem', fontWeight: '600' }}>{lobby.name}</div>
+                <div style={{ color: t.textMuted, fontSize: '0.73rem', margin: '0.2rem 0' }}>{lobby.desc}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: t.textMuted, fontSize: '0.72rem', marginTop: '0.4rem' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+                  {lobby.users} online
+                </div>
               </div>
+            ))}
+          </div>
+        )}
+
+        {/* Chat Lobbies – mobil drawer */}
+        {isMobile && chatOpen && (
+          <>
+            <div onClick={() => setChatOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200 }} />
+            <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '280px', background: t.bgCard, borderLeft: `1px solid ${t.border}`, zIndex: 201, overflowY: 'auto', padding: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h2 style={{ color: t.text, fontSize: '0.95rem', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Users size={16} color="#2d9c8a" /> Chat szobák
+                </h2>
+                <button onClick={() => setChatOpen(false)} style={{ background: 'none', border: 'none', color: t.textMuted, cursor: 'pointer', fontSize: '1.2rem', display: 'flex' }}>✕</button>
+              </div>
+              <p style={{ color: t.textMuted, fontSize: '0.75rem', marginBottom: '1rem' }}>Csatlakozz más horgászokhoz!</p>
+              {lobbies.map((lobby) => (
+                <div key={lobby.id} style={{ padding: '0.75rem', marginBottom: '0.4rem', background: t.bg, borderRadius: '8px', cursor: 'pointer', border: `1px solid ${t.border}` }}>
+                  <div style={{ color: '#4ade80', fontSize: '0.83rem', fontWeight: '600' }}>{lobby.name}</div>
+                  <div style={{ color: t.textMuted, fontSize: '0.73rem', margin: '0.2rem 0' }}>{lobby.desc}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: t.textMuted, fontSize: '0.72rem', marginTop: '0.4rem' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+                    {lobby.users} online
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
 
       </div>
     </div>

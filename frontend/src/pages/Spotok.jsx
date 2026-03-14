@@ -114,7 +114,7 @@ function Spotok() {
   })
 
   return (
-    <div style={{ flex: 1, background: t.bg, minHeight: '100vh', padding: '2rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: t.bg, overflowY: 'auto', padding: '2rem' }}>
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
