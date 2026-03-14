@@ -593,20 +593,6 @@ function Fogasok() {
             ))}
           </div>
 
-          {/* Stats */}
-          <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: '12px', padding: '1rem', marginTop: '1rem' }}>
-            <h3 style={{ color: t.text, fontSize: '0.88rem', fontWeight: '700', margin: '0 0 0.75rem' }}>Statisztika</h3>
-            {[
-              { label: 'Összes fogás', value: '1 247', gold: false },
-              { label: 'Ezen a héten', value: '38', gold: false },
-              { label: 'Rekord', value: '38.5 kg', gold: true },
-            ].map(({ label, value, gold }) => (
-              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: t.textMuted, fontSize: '0.75rem' }}>{label}</span>
-                <span style={{ color: gold ? t.gold : '#4ade80', fontSize: '0.75rem', fontWeight: '700' }}>{value}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
       </div>
